@@ -1,7 +1,12 @@
 package nmoptim
 
 import (
+	"math"
 	"testing"
+)
+
+const (
+	precision = 0.00001
 )
 
 func rosen(x []float64) float64 {
@@ -59,15 +64,24 @@ func TestScale(t *testing.T) {
 }
 
 func TestCentroid(t *testing.T) {
-	t.Errorf("Failing TestCentroid because it is not implemented")
-}
+	sx := simplex{point{1.0, 0.0}, point{0.0, 1.0}, point{3.0, 4.0}}
+	p := sx.centroid(2)
 
-func TestArgMax(t *testing.T) {
-	t.Errorf("Failing TestArgMax because it is not implemented")
-}
+	if sx[0][0] != 1.0 && sx[0][1] != 0.0 {
+		t.Errorf("sx[0] is %v", sx[0])
+	}
 
-func TestArgMin(t *testing.T) {
-	t.Errorf("Failing TestArgMin because it is not implemented")
+	if sx[1][0] != 0.0 && sx[0][1] != 1.0 {
+		t.Errorf("sx[1] is %v", sx[1])
+	}
+
+	if sx[2][0] != 3.0 && sx[2][1] != 4.0 {
+		t.Errorf("sx[2] is %v", sx[2])
+	}
+
+	if p[0] != 0.5 && p[1] != 0.5 {
+		t.Errorf("p is %v want %v", p, point{0.5, 0.5})
+	}
 }
 
 func TestNelderMead(t *testing.T) {
@@ -78,11 +92,11 @@ func TestNelderMead(t *testing.T) {
 	s := [][]float64{x, y, z}
 
 	r := Optimize(rosen, s)
-	if r[0] != 1.0 {
+	if math.Abs(r[0]-1.0) > precision {
 		t.Errorf("r[0] = %v, want %v", r[0], 1.0)
 	}
 
-	if r[1] != 1.0 {
+	if math.Abs(r[1]-1.0) > precision {
 		t.Errorf("r[1] = %v, want %v", r[1], 1.0)
 	}
 }

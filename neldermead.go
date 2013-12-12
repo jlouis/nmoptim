@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	kMax = 1000    // arbitrarily chosen value for now
-	ε    = 0.00001 // Stopping criterion point
+	kMax = 1000             // arbitrarily chosen value for now
+	ε    = 0.00000000000001 // Stopping criterion point
 	α    = 1.0
 	β    = 0.5
 	γ    = 2.0
@@ -49,10 +49,10 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 		if f(xp) < f(sx[l]) {
 			xpp := sub(xp.scale(1.0-γ), sx.centroid(h).scale(γ))
 			if f(xpp) < f(sx[l]) {
-				fmt.Printf("Expanding⋯\n")
+				//fmt.Printf("Expanding⋯\n")
 				sx[h] = xpp // Expansion
 			} else {
-				fmt.Printf("Reflecting⋯\n")
+				//fmt.Printf("Reflecting⋯\n")
 				sx[h] = xp // Reflection
 			}
 		} else if testForallBut(f, xp, sx, h) {
@@ -68,11 +68,11 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 					sx[i] = add(sx[i], sx[l]).scale(0.5)
 				}
 			} else {
-				fmt.Printf("Contracting⋯\n")
+				//fmt.Printf("Contracting⋯\n")
 				sx[h] = xpp // Contraction
 			}
 		} else {
-			fmt.Printf("Reflecting (2)⋯\n")
+			//fmt.Printf("Reflecting (2)⋯\n")
 			sx[h] = xp // Reflection
 		}
 	}
@@ -83,9 +83,10 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 
 // sub perform point subtraction
 func sub(x point, y point) point {
-	r := x
+	r := make(point, len(x))
+
 	for i := range y {
-		r[i] -= y[i]
+		r[i] = x[i] - y[i]
 	}
 
 	return r
@@ -93,9 +94,10 @@ func sub(x point, y point) point {
 
 // add perform point addition
 func add(x point, y point) point {
-	r := x
+	r := make(point, len(x))
+
 	for i := range y {
-		r[i] += y[i]
+		r[i] = x[i] + y[i]
 	}
 
 	return r
@@ -103,9 +105,10 @@ func add(x point, y point) point {
 
 // scale multiplies a point by a scalar
 func (p point) scale(scalar float64) point {
-	r := p
+	r := make(point, len(p))
+
 	for i := range r {
-		r[i] *= scalar
+		r[i] = scalar * p[i]
 	}
 
 	return r
@@ -130,7 +133,7 @@ func testForallBut(f optfunc, xp point, sx simplex, h int) bool {
 
 // centroid calculates the centroid of a simplex of one dimensionality lower by omitting a point
 func (s simplex) centroid(omit int) point {
-	r := s[0]
+	r := make(point, len(s[0]))
 
 	for i := range r {
 		c := 0.0
