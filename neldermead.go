@@ -193,12 +193,10 @@ func stopCriterion(f optfunc, xs simplex) bool {
 	s := 0.0
 	for _, v := range r {
 		rs := (v - avg) * (v - avg)
-		fmt.Printf("v is %v, result is %v\n", v, rs)
 		s += rs
 	}
 
 	res := math.Sqrt(1 / (1.0 + float64(len(r))) * s)
 
-	fmt.Printf("We are at %v toward the limit (%v) - s is %v, avg is %v\n", res, res < ε, s, avg)
 	return (res > ε)
 }
