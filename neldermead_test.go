@@ -100,3 +100,16 @@ func TestNelderMead(t *testing.T) {
 		t.Errorf("r[1] = %v, want %v", r[1], 1.0)
 	}
 }
+
+func BenchmarkNelderMead(b *testing.B) {
+		x := []float64{-0.5, -1.0}
+	y := []float64{-0.75, 1.5}
+	z := []float64{0.2, 1.2}
+
+	s := [][]float64{x, y, z}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Optimize(rosen, s)
+	}
+}

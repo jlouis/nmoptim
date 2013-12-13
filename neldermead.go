@@ -8,9 +8,13 @@ import (
 const (
 	kMax = 1000             // arbitrarily chosen value for now
 	ε    = 0.00000000000001 // Stopping criterion point
-	α    = 1.0
+	α    = 1.2
 	β    = 0.5
 	γ    = 2.0
+)
+
+var (
+	evaluations = 0
 )
 
 // point is the type of points in ℝ^n
@@ -22,9 +26,16 @@ type simplex []point
 // optfunc is the type of optimization functions. They run from ℝ^n → ℝ, here represented with float64's
 type optfunc func([]float64) float64
 
+// Evaluate the function, counting how many times it gets executed
+func eval(f optfunc, p point) float64 {
+	evaluations++
+	return f(p)
+}
+	
 // Optimize function f with Nelder-Mead. start points to a slice of starting points
 // It is the responsibility of the caller to make sure the dimensionality is correct.
 func Optimize(f optfunc, start [][]float64) []float64 {
+	evaluations = 0
 	n := len(start)
 	c := len(start[0])
 	points := make([]point, 0)
@@ -46,9 +57,9 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 			sx.centroid(h).scale(1.0+α),
 			sx[h].scale(α))
 
-		if f(xp) < f(sx[l]) {
+		if eval(f, xp) < eval(f, sx[l]) {
 			xpp := sub(xp.scale(1.0-γ), sx.centroid(h).scale(γ))
-			if f(xpp) < f(sx[l]) {
+			if eval(f, xpp) < eval(f, sx[l]) {
 				//fmt.Printf("Expanding⋯\n")
 				sx[h] = xpp // Expansion
 			} else {
@@ -56,12 +67,12 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 				sx[h] = xp // Reflection
 			}
 		} else if testForallBut(f, xp, sx, h) {
-			if f(xp) <= f(sx[h]) {
+			if eval(f, xp) <= eval(f, sx[h]) {
 				sx[h] = xp
 			}
 
 			xpp := add(sx[h].scale(β), sx.centroid(h).scale(1.0-β))
-			if f(xpp) > f(sx[h]) {
+			if eval(f, xpp) > eval(f, sx[h]) {
 				// Multiple contraction
 				fmt.Printf("Multiple contracting⋯\n")
 				for i := range sx {
@@ -77,7 +88,7 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 		}
 	}
 
-	fmt.Printf("Exited after %v iterations\n", k)
+	//fmt.Printf("Exited after %v iterations & %v evaluations\n", k, evaluations)
 	return sx[l]
 }
 
@@ -120,7 +131,7 @@ func testForallBut(f optfunc, xp point, sx simplex, h int) bool {
 		if i == h {
 			continue
 		} else {
-			if f(xp) > f(sx[i]) {
+			if eval(f, xp) > eval(f, sx[i]) {
 				continue
 			} else {
 				return false
@@ -153,10 +164,10 @@ func (s simplex) centroid(omit int) point {
 
 // argMax finds the best point in the simplex for the optfunc
 func (s simplex) argMax(f optfunc) (idx int) {
-	v := f(s[0])
+	v := eval(f, s[0])
 	idx = 0
 	for i := 1; i < len(s); i++ {
-		r := f(s[i])
+		r := eval(f, s[i])
 		if r > v {
 			v = r
 			idx = i
@@ -167,10 +178,10 @@ func (s simplex) argMax(f optfunc) (idx int) {
 
 // argMin finds the worst point in the simplex for the optfunc
 func (s simplex) argMin(f optfunc) (idx int) {
-	v := f(s[0])
+	v := eval(f, s[0])
 	idx = 0
 	for i := 1; i < len(s); i++ {
-		r := f(s[i])
+		r := eval(f, s[i])
 		if r < v {
 			v = r
 			idx = i
