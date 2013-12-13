@@ -1,7 +1,6 @@
 package nmoptim
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -31,10 +30,10 @@ func eval(f optfunc, p point) float64 {
 	evaluations++
 	return f(p)
 }
-	
+
 // Optimize function f with Nelder-Mead. start points to a slice of starting points
 // It is the responsibility of the caller to make sure the dimensionality is correct.
-func Optimize(f optfunc, start [][]float64) []float64 {
+func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 	evaluations = 0
 	n := len(start)
 	c := len(start[0])
@@ -60,10 +59,8 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 		if eval(f, xp) < eval(f, sx[l]) {
 			xpp := sub(xp.scale(1.0-γ), sx.centroid(h).scale(γ))
 			if eval(f, xpp) < eval(f, sx[l]) {
-				//fmt.Printf("Expanding⋯\n")
 				sx[h] = xpp // Expansion
 			} else {
-				//fmt.Printf("Reflecting⋯\n")
 				sx[h] = xp // Reflection
 			}
 		} else if testForallBut(f, xp, sx, h) {
@@ -74,22 +71,18 @@ func Optimize(f optfunc, start [][]float64) []float64 {
 			xpp := add(sx[h].scale(β), sx.centroid(h).scale(1.0-β))
 			if eval(f, xpp) > eval(f, sx[h]) {
 				// Multiple contraction
-				fmt.Printf("Multiple contracting⋯\n")
 				for i := range sx {
 					sx[i] = add(sx[i], sx[l]).scale(0.5)
 				}
 			} else {
-				//fmt.Printf("Contracting⋯\n")
 				sx[h] = xpp // Contraction
 			}
 		} else {
-			//fmt.Printf("Reflecting (2)⋯\n")
 			sx[h] = xp // Reflection
 		}
 	}
 
-	//fmt.Printf("Exited after %v iterations & %v evaluations\n", k, evaluations)
-	return sx[l]
+	return sx[l], k, evaluations
 }
 
 // sub perform point subtraction
