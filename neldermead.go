@@ -25,6 +25,8 @@ type simplex []point
 // optfunc is the type of optimization functions. They run from ℝ^n → ℝ, here represented with float64's
 type optfunc func([]float64) float64
 
+type constrainfunc func([]float64)
+
 // Evaluate the function, counting how many times it gets executed
 func eval(f optfunc, p point) float64 {
 	evaluations++
@@ -33,7 +35,7 @@ func eval(f optfunc, p point) float64 {
 
 // Optimize function f with Nelder-Mead. start points to a slice of starting points
 // It is the responsibility of the caller to make sure the dimensionality is correct.
-func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
+func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, int) {
 	evaluations = 0
 	n := len(start)
 	c := len(start[0])
@@ -50,6 +52,9 @@ func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 
 	// Set up initial values
 	for i := range fv {
+		if cf != nil {
+			cf(sx[i])
+		}
 		fv[i] = eval(f, sx[i])
 	}
 
@@ -82,7 +87,9 @@ func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 		vm := sx.centroid(vg)
 
 		vr := add(vm, sub(vm, sx[vg]).scale(α))
-
+		if cf != nil {
+			cf(vr)
+		}
 		fr := eval(f, vr)
 
 		if fr < fv[vh] && fr >= fv[vs] {
@@ -94,7 +101,10 @@ func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 		// Investigate a step further
 		if fr < fv[vs] {
 			ve := add(vm, sub(vr, vm).scale(γ))
-
+			if cf != nil {
+				cf(ve)
+			}
+			
 			fe := eval(f, ve)
 
 			if fe < fr {
@@ -113,13 +123,15 @@ func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 			if fr < fv[vg] && fr >= fv[vh] {
 				// Outside contraction
 				vc = add(vm, sub(vr, vm).scale(β))
-
-				fc = eval(f, vc)
 			} else {
 				// Inside contraction
 				vc = sub(vm, sub(vm, sx[vg]).scale(β))
-				fc = eval(f, vc)
 			}
+
+			if cf != nil {
+				cf(vc)
+			}
+			fc = eval(f, vc)
 
 			if fc < fv[vg] {
 				sx[vg] = vc
@@ -131,7 +143,14 @@ func Optimize(f optfunc, start [][]float64) ([]float64, int, int) {
 					}
 				}
 
+				if cf != nil {
+					cf(sx[vg])
+				}
 				fv[vg] = eval(f, sx[vg])
+				
+				if cf != nil {
+					cf(sx[vh])
+				}
 				fv[vh] = eval(f, sx[vh])
 			}
 		}

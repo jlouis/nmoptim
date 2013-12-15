@@ -92,7 +92,7 @@ func TestNelderMead(t *testing.T) {
 
 	s := [][]float64{x, y, z}
 
-	r, k, e := Optimize(rosen, s)
+	r, k, e := Optimize(rosen, s, nil)
 	fmt.Printf("Finished in %v iterations & %v evaluations\n", k, e)
 	if math.Abs(r[0]-1.0) > precision {
 		t.Errorf("r[0] = %v, want %v", r[0], 1.0)
@@ -112,6 +112,6 @@ func BenchmarkNelderMead(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Optimize(rosen, s)
+		Optimize(rosen, s, nil)
 	}
 }
