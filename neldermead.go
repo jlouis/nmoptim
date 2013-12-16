@@ -2,10 +2,11 @@ package nmoptim
 
 import (
 	"math"
+	"fmt"
 )
 
 const (
-	kMax = 200          // arbitrarily chosen value for now
+	kMax = 1000          // arbitrarily chosen value for now
 	ε    = 0.0000000001 // Stopping criterion point
 	α    = 1.0
 	β    = 0.5
@@ -47,6 +48,7 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 	}
 	sx := simplex(points)
 	if n != c+1 {
+		fmt.Printf("Dimension: %v, StartPoints: %v\n")
 		panic("Can't optimize with too few starting points")
 	}
 
@@ -170,6 +172,8 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 		if s < ε {
 			break
 		}
+		
+		fmt.Printf("Iteration %v: (%v) → %v (dist: %v)\n", k, sx[vs], fv[vs], s)
 	}
 
 	vs := 0
