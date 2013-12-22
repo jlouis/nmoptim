@@ -1,12 +1,12 @@
 package nmoptim
 
 import (
-	"math"
 	"fmt"
+	"math"
 )
 
 const (
-	kMax = 1000          // arbitrarily chosen value for now
+	kMax = 1000     // arbitrarily chosen value for now
 	ε    = 0.000001 // Stopping criterion point
 	α    = 1.0
 	β    = 0.5
@@ -88,7 +88,7 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 
 		// Print out the iteration point
 		fmt.Printf("Iteration %v:\n", k)
-		for i, endpoint := range(sx) {
+		for i, endpoint := range sx {
 			var marker string
 			if i == vg {
 				marker = "g"
@@ -123,7 +123,7 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 			if cf != nil {
 				cf(ve)
 			}
-			
+
 			fe := eval(f, ve)
 
 			if fe < fr {
@@ -166,7 +166,7 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 					cf(sx[vg])
 				}
 				fv[vg] = eval(f, sx[vg])
-				
+
 				if cf != nil {
 					cf(sx[vh])
 				}
@@ -180,18 +180,18 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 		}
 
 		favg := fsum / float64(len(fv))
-		
+
 		s := 0.0
 		for _, v := range fv {
-			s += math.Pow(v - favg, 2.0)
+			s += math.Pow(v-favg, 2.0)
 		}
-		
-		s = s * ( 1.0 / ( float64(len(fv)) + 1.0 ) )
+
+		s = s * (1.0 / (float64(len(fv)) + 1.0))
 		s = math.Sqrt(s)
 		if s < ε {
 			break
 		}
-		
+
 		fmt.Printf("\t\tDone, convergence: %v\n", s)
 	}
 
