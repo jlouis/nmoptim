@@ -7,7 +7,7 @@ import (
 
 const (
 	kMax = 1000          // arbitrarily chosen value for now
-	ε    = 0.0000000001 // Stopping criterion point
+	ε    = 0.000001 // Stopping criterion point
 	α    = 1.0
 	β    = 0.5
 	γ    = 2.0
@@ -86,6 +86,23 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 			}
 		}
 
+		// Print out the iteration point
+		fmt.Printf("Iteration %v:\n", k)
+		for i, endpoint := range(sx) {
+			var marker string
+			if i == vg {
+				marker = "g"
+			} else if i == vs {
+				marker = "s"
+			} else if i == vh {
+				marker = "h"
+			} else {
+				marker = " "
+			}
+
+			fmt.Printf("\t%v sx[%v] = %v → %v\n", marker, i, endpoint, fv[i])
+		}
+
 		vm := sx.centroid(vg)
 
 		vr := add(vm, sub(vm, sx[vg]).scale(α))
@@ -162,18 +179,20 @@ func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, i
 			fsum += v
 		}
 
-		favg := fsum / float64(len(fv)+1)
+		favg := fsum / float64(len(fv))
+		
 		s := 0.0
 		for _, v := range fv {
-			s += math.Pow(v-favg, 2.0) / float64(n)
+			s += math.Pow(v - favg, 2.0)
 		}
-
+		
+		s = s * ( 1.0 / ( float64(len(fv)) + 1.0 ) )
 		s = math.Sqrt(s)
 		if s < ε {
 			break
 		}
 		
-		fmt.Printf("Iteration %v: (%v) → %v (dist: %v)\n", k, sx[vs], fv[vs], s)
+		fmt.Printf("\t\tDone, convergence: %v\n", s)
 	}
 
 	vs := 0

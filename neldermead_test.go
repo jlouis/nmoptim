@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	precision = 0.00001
+	precision = 0.001
 )
 
 func rosen(x []float64) float64 {
