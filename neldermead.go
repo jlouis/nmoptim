@@ -23,20 +23,15 @@ type point []float64
 // simplex is the type used to represent a simplex
 type simplex []point
 
-// optfunc is the type of optimization functions. They run from ℝ^n → ℝ, here represented with float64's
-type optfunc func([]float64) float64
-
-type constrainfunc func([]float64)
-
 // Evaluate the function, counting how many times it gets executed
-func eval(f optfunc, p point) float64 {
+func eval(f func([]float64) float64, p point) float64 {
 	evaluations++
 	return f(p)
 }
 
 // Optimize function f with Nelder-Mead. start points to a slice of starting points
 // It is the responsibility of the caller to make sure the dimensionality is correct.
-func Optimize(f optfunc, start [][]float64, cf constrainfunc) ([]float64, int, int) {
+func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) ([]float64, int, int) {
 	evaluations = 0
 	n := len(start)
 	c := len(start[0])
