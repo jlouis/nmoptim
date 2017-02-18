@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	kMax = 1000     // arbitrarily chosen value for now
+	max = 1000     // arbitrarily chosen value for now
 	ε    = 0.000001 // Stopping criterion point
 	α    = 1.0
 	β    = 0.5
@@ -43,7 +43,7 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 	}
 	sx := simplex(points)
 	if n != c+1 {
-		fmt.Printf("Dimension: %v, StartPoints: %v\n")
+		fmt.Printf("Dimension: %v, StartPoints: %v\n", n, c)
 		panic("Can't optimize with too few starting points")
 	}
 
@@ -56,7 +56,7 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 	}
 
 	k := 0
-	for ; k < kMax; k++ {
+	for ; k < max; k++ {
 		// Find the largest index
 		vg := 0
 		for i := range fv {
