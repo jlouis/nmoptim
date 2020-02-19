@@ -6,7 +6,7 @@ It doesn't work for functions with several optimal points and there are other pr
 
 # License
 
-	Copyright 2014-2017 Jesper Louis Andersen
+	Copyright 2014-2020 Jesper Louis Andersen
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.

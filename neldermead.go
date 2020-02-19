@@ -7,10 +7,10 @@ import (
 
 const (
 	max = 1000     // arbitrarily chosen value for now
-	ε    = 0.000001 // Stopping criterion point
-	α    = 1.0
-	β    = 0.5
-	γ    = 2.0
+	ε   = 0.000001 // Stopping criterion point
+	α   = 1.0
+	β   = 0.5
+	γ   = 2.0
 )
 
 var (
