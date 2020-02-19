@@ -1,7 +1,6 @@
 package nmoptim
 
 import (
-	"fmt"
 	"math"
 	"testing"
 )
@@ -92,8 +91,7 @@ func TestNelderMead(t *testing.T) {
 
 	s := [][]float64{x, y, z}
 
-	r, k, e := Optimize(rosen, s, nil)
-	fmt.Printf("Finished in %v iterations & %v evaluations\n", k, e)
+	r, _, _ := Optimize(rosen, s, nil)
 	if math.Abs(r[0]-1.0) > precision {
 		t.Errorf("r[0] = %v, want %v", r[0], 1.0)
 	}

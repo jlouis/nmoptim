@@ -1,7 +1,7 @@
 package nmoptim
 
 import (
-	"fmt"
+	"log"
 	"math"
 )
 
@@ -13,26 +13,20 @@ const (
 	γ   = 2.0
 )
 
-var (
-	evaluations = 0
-)
-
 // point is the type of points in ℝ^n
 type point []float64
 
 // simplex is the type used to represent a simplex
 type simplex []point
 
-// Evaluate the function, counting how many times it gets executed
-func eval(f func([]float64) float64, p point) float64 {
-	evaluations++
-	return f(p)
-}
-
 // Optimize function f with Nelder-Mead. start points to a slice of starting points
 // It is the responsibility of the caller to make sure the dimensionality is correct.
+//
+// The cf function is a constraint function which can be used to clamp the space in which
+// your optimization runs. This avoid the algorithm picking extreme points, ouside the
+// space you want to operate on.
 func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) ([]float64, int, int) {
-	evaluations = 0
+	evaluations := 0
 	n := len(start)
 	c := len(start[0])
 	points := make([]point, 0)
@@ -43,8 +37,7 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 	}
 	sx := simplex(points)
 	if n != c+1 {
-		fmt.Printf("Dimension: %v, StartPoints: %v\n", n, c)
-		panic("Can't optimize with too few starting points")
+		log.Fatalf("Can't optimize with too few starting points. D:%v, SP:%v", n, c)
 	}
 
 	// Set up initial values
@@ -52,7 +45,8 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 		if cf != nil {
 			cf(sx[i])
 		}
-		fv[i] = eval(f, sx[i])
+		fv[i] = f(sx[i])
+		evaluations++
 	}
 
 	k := 0
@@ -81,30 +75,14 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 			}
 		}
 
-		// Print out the iteration point
-		fmt.Printf("Iteration %v:\n", k)
-		for i, endpoint := range sx {
-			var marker string
-			if i == vg {
-				marker = "g"
-			} else if i == vs {
-				marker = "s"
-			} else if i == vh {
-				marker = "h"
-			} else {
-				marker = " "
-			}
-
-			fmt.Printf("\t%v sx[%v] = %v → %v\n", marker, i, endpoint, fv[i])
-		}
-
 		vm := sx.centroid(vg)
 
 		vr := add(vm, sub(vm, sx[vg]).scale(α))
 		if cf != nil {
 			cf(vr)
 		}
-		fr := eval(f, vr)
+		fr := f(vr)
+		evaluations++
 
 		if fr < fv[vh] && fr >= fv[vs] {
 			// Replace
@@ -119,7 +97,8 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 				cf(ve)
 			}
 
-			fe := eval(f, ve)
+			fe := f(ve)
+			evaluations++
 
 			if fe < fr {
 				sx[vg] = ve
@@ -145,7 +124,8 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 			if cf != nil {
 				cf(vc)
 			}
-			fc = eval(f, vc)
+			fc = f(vc)
+			evaluations++
 
 			if fc < fv[vg] {
 				sx[vg] = vc
@@ -160,12 +140,14 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 				if cf != nil {
 					cf(sx[vg])
 				}
-				fv[vg] = eval(f, sx[vg])
+				fv[vg] = f(sx[vg])
+				evaluations++
 
 				if cf != nil {
 					cf(sx[vh])
 				}
-				fv[vh] = eval(f, sx[vh])
+				fv[vh] = f(sx[vh])
+				evaluations++
 			}
 		}
 
@@ -186,8 +168,6 @@ func Optimize(f func([]float64) float64, start [][]float64, cf func([]float64)) 
 		if s < ε {
 			break
 		}
-
-		fmt.Printf("\t\tDone, convergence: %v\n", s)
 	}
 
 	vs := 0
